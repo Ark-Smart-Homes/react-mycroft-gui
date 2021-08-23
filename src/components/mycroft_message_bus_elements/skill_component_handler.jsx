@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import "./default.scss";
-import { GuiExamplesAiix } from "./skill_components/gui_examples_aiix";
-import { MycroftDateTime } from "./skill_components/mycroft_date_time";
-import { MycroftIp } from "./skill_components/mycroft_ip";
-import { MycroftWiki } from "./skill_components/mycroft_wiki";
-import { MycroftWeather } from "./skill_components/mycroft_weather/mycroft_weather";
+import { GuiExamplesAiix } from "./components/mycroft_aiix/gui_examples_aiix";
+import { MycroftDateTime } from "./components/mycroft_date_time/mycroft_date_time";
+import { MycroftIp } from "./components/mycroft_ip/mycroft_ip";
+import { MycroftWiki } from "./components/mycroft_wiki/mycroft_wiki";
+import { MycroftWeather } from "./components/mycroft_weather/mycroft_weather";
 
 export default function SkillComponentHandler(props) {
 	function returnActiveSkillComponent() {
@@ -12,6 +12,10 @@ export default function SkillComponentHandler(props) {
 		const skill_state = props.skillState;
 		const component_focus = skill_state["component_focus"];
 		const component_name = skill_state["components"][component_focus];
+		console.log("active_skill inside skillcomponent", active_skill)
+		console.log("skill_state inside skillcomponent", skill_state)
+		console.log("component_focus inside skillcomponent", component_focus)
+		console.log("component_name inside skillcomponent", component_name)
 		switch (active_skill) {
 			case "gui-examples.aiix":
 				return (
@@ -53,9 +57,13 @@ export default function SkillComponentHandler(props) {
 					/>
 				);
 			default:
-				return null;
+				// return null;
 				console.log("Unhandled component for: " + active_skill);
-				break;
+				return (<div>
+							<p>{active_skill}</p>
+							<p>{skill_state}</p>
+							<p>{component_name}</p>
+						</div>);
 		}
 	}
 

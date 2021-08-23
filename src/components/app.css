@@ -1,4 +1,13 @@
 body {
-  background-color: black;
-  color: #d1d3d4;
+  background-color: #204E79;
+  color: #FFF2CC;
+}
+
+.title {
+  text-align: center;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }

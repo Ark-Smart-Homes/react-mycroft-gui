@@ -1,22 +1,53 @@
 import React, { Component, useState } from "react";
-import { Face } from "./widgets/face";
+import { Slideshow } from "./components/slideshow/slideshow";
 import SkillComponent from "./skill_component_handler";
+import MessageComponent from "./message_component_handler"
 
+const SLIDESHOW_INTERVAL = 30
+
+  
 export default class MycroftMessageBus extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			"ws.readyState": null,
 			"mycroft.system.active_skills": null,
-			"face.active": false,
+			"face.active": true,
+			"speak": null,
+			"mycroft_state": null,
+			"image_index": 0,
+			"time": new Date().toLocaleTimeString(),
+			"seconds": 1
 		};
 	}
 
+
+	tick() {
+		if (this.state.seconds % SLIDESHOW_INTERVAL === 0  ) {
+			console.log("image_index + 1", this.state.image_index + 1)
+			this.setState({ "image_index": this.state.image_index + 1 });
+			this.setState(state => ({
+				seconds: 0
+				}));
+		}
+
+		this.setState(state => ({
+			seconds: state.seconds + 1
+			}));
+
+
+	  }
+
 	componentDidMount() {
+		this.interval = setInterval(() => this.tick(), 1000);
 		if ((this.state["ws.readyState"] = null || 3)) {
 			this.connectToCoreWebSocket();
 		}
 	}
+
+	componentWillUnmount() {
+		clearInterval(this.interval);
+	  }
 
 	connectToCoreWebSocket() {
 		var ws = new WebSocket("ws://localhost:8181/core");
@@ -56,17 +87,33 @@ export default class MycroftMessageBus extends Component {
 		let setFaceState = (active) => {
 			this.setState({ "face.active": active });
 		};
+		let setSpeakState = (utterance) => {
+			this.setState({ "speak": utterance });
+		};
+		let setMycroftState = (state) => {
+			this.setState({ "mycroft_state": state });
+		};
 		web_socket.onmessage = (event) => {
 			var msg = JSON.parse(event.data);
+			// console.log('top message', msg)
 			switch (msg.type) {
 				case "recognizer_loop:audio_output_start":
 					setFaceState(true);
 					break;
 				case "recognizer_loop:audio_output_end":
 					setFaceState(false);
+					setSpeakState(null);
 					break;
 				case "mycroft.ready":
 					console.log("Mycroft is ready.");
+					break;
+				case "speak":
+					console.log("Mycroft is speaking.", msg.data);
+					setSpeakState(msg.data.utterance);
+					break;
+				case "gui.value.set":
+					console.log("Mycroft state.", msg.data);
+					setMycroftState(msg.data);
 					break;
 				case "mycroft.gui.port":
 					console.log(msg.type);
@@ -77,6 +124,7 @@ export default class MycroftMessageBus extends Component {
 				default:
 				// Log unhandled messages
 				// console.log("Unhandled message type: " + msg.type);
+				// console.log("Unhandled message event: " + event.data);
 			}
 		};
 	}
@@ -88,6 +136,8 @@ export default class MycroftMessageBus extends Component {
 				{},
 				this.state[gui_msg.namespace]
 			);
+			// console.log("gui_msg", gui_msg)
+			// console.log("gui_msg.type", gui_msg.type)
 			switch (gui_msg.type) {
 				case "mycroft.session.list.insert":
 					// Insert a new and reset existing skill namespace under mycroft.system.active_skill in state
@@ -122,6 +172,7 @@ export default class MycroftMessageBus extends Component {
 					});
 				case "mycroft.events.triggered":
 					// Used to switch page within currently active namespace if page focus event
+					// console.log("gui_msg", gui_msg)
 					if (gui_msg.event_name == "page_gained_focus") {
 						let resetDisplayEvent = () => {
 							component_namespace_state["display"] = {
@@ -149,36 +200,51 @@ export default class MycroftMessageBus extends Component {
 		};
 	}
 
+
 	render() {
+		let seconds = this.state["seconds"];
+		let image_index = this.state["image_index"];
 		let active_skill = this.state["mycroft.system.active_skills"];
 		let active_skill_state = this.state[active_skill];
 		let face_state = this.state["face.active"];
+		let speak = this.state["speak"];
+		let mycroft_state = this.state["mycroft_state"];
+		// console.log('active_skill', active_skill)
+		// console.log('active_skill_state', active_skill_state)
+		// console.log('speak', speak)
+		// console.log("seconds", seconds)
 
 		let defaultFace = () => {
 			return (
 				<div className="container">
-					<Face active={face_state} />
+					{/* <Face active={face_state} /> */}
+					<p>{speak}</p>
 				</div>
 			);
 		};
+		if (speak){
+			console.log("speak")
+			return (
+				<MessageComponent
+					utterance={speak} active_skill="speak"
+				/>
+			)
 
-		if (active_skill && active_skill_state) {
-			let active_skill_state_focus = active_skill_state["component_focus"];
-			if (active_skill_state_focus >= 1 || active_skill_state_focus == 0) {
-				return (
-					<div className="container">
-						<Face active={face_state} />
-						<SkillComponent
-							activeSkill={active_skill}
-							skillState={active_skill_state}
-						/>
-					</div>
-				);
-			} else {
-				return defaultFace();
-			}
+		} else if (mycroft_state){
+			console.log('print mycroft state1')
+			return(
+				<div>
+				<Slideshow active={face_state} index={image_index}/>
+				<MessageComponent
+					mycroft_state={mycroft_state} active_skill="home"
+				/>
+			  </div>
+
+			)
 		} else {
-			return defaultFace();
+			console.log("deafult face")
+			// return defaultFace();
+			return null
 		}
 	}
 }

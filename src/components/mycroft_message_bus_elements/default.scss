@@ -14,11 +14,8 @@ $default-slide-transition-speed: 0.5s;
   transform: scale(-1, 1);*/
 
   p {
-    /*opacity: 0;*/
     width: 100%;
     max-width: 100%;
-    position: relative;
-    top: 45vh;
     text-align: center;
     z-index: 2;
   }
@@ -32,6 +29,25 @@ $default-slide-transition-speed: 0.5s;
     top: 50vh;
     transform: translateY(-50%);
   }
+}
+
+.title {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.title p {
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.title h1 {
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 400%;
 }
 
 .overlay {
