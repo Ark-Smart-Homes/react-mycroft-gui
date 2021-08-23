@@ -16,7 +16,6 @@ export default class MycroftMessageBus extends Component {
 			"speak": null,
 			"mycroft_state": null,
 			"image_index": 0,
-			"time": new Date().toLocaleTimeString(),
 			"seconds": 1
 		};
 	}
@@ -212,7 +211,7 @@ export default class MycroftMessageBus extends Component {
 		// console.log('active_skill', active_skill)
 		// console.log('active_skill_state', active_skill_state)
 		// console.log('speak', speak)
-		// console.log("seconds", seconds)
+		console.log("seconds", seconds)
 
 		let defaultFace = () => {
 			return (
